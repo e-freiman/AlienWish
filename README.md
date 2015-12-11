@@ -1,5 +1,7 @@
 # Alien Wish
 
+The goal of this project is to get / refresh Java programming skills through creating simple and useful application. The idea is to go through all stages from architecture and coding till deployment on Google Play
+
 ### Rules of engagement: ###
 
 * The first rule of this repository is we write code for learning
