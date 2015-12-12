@@ -6,11 +6,12 @@ The goal of this project is to get / refresh Java programming skills through cre
 
 ### Idea ###
 
-The idea of the project is to remind your friend / wife / child about something that they promised doing. For example, you ask your friend to bring you some book and he tells you "please, remind me in the evening". In one universe, your friend and you  forget about it and this is repeating for a week, my experience tells me that this is a very common case. In another universe, you ask your friend to install AlienWish app on his Android Phone, start it and close, no need to register. Your friend doing you a favor, so this is bad manners to bother him further by this stupid stuff and we won't. On your phone you install the same app, create a request where write "don't forget to take a book", set 8.00 pm and send it to the friend by choosing his name in the phone's address book. By this time, the friend gets alert that you are trying to set a notofocation for him, he accept it and this is it. In the evening he will be rmined about the book.
+The idea of the application is to remind your friend / wife / child or even yourself about something that they promised doing. Imagine, you asking your friend to bring you a book and he tells "please, remind me in the evening". It may take yeas for you to take this book. However, you could also ask your friend to install AlienWish app on his phone and start it, nothing more. On your phone you open AlienWish, create a request with text "don't forget to take a book", set 8.00 pm and send it to your friend by choosing his name in the phone's address book. In the evening your friend gets notofication about the book.
 
-The key points:
+**Key features:**
 
-* Notification can be triggeres by time (like in the exaple above), by fixed location (like "if you go to the market, please by me hinges for cabinet") or by locating near the place that have certain naming on Yandex maps  (like "if you are near any farmacy, buy me an aspirin")
+* Notification can be triggered by the following events:
+** time (like in the exaple above), by fixed location (like "if you go to the market, please by me hinges for cabinet") or by locating near the place that have certain naming on Yandex maps  (like "if you are near any farmacy, buy me an aspirin")
 
 ### Rules of engagement: ###
 
