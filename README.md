@@ -10,10 +10,11 @@ The idea of the application is to remind your friend / wife / child or even your
 
 **Key features:**
 
-* Notifications can be triggered not only by time, but also by location. Moreover, location may be set either as fixed coordinates or as keywords which are being searched on the map. Use case example for fixed location is when you ask your friend to buy a screwdriver when he happens to be in a household goods shop near his house. Keywords might be used when you don't care in which shop he buy you a screwdriver, he will be getting notifications every time when he is near a suitable shop.
+* Notifications can be triggered not only by time, but also by location. Moreover, location may be set either as fixed coordinates or as keywords which are being searched on the map. Use case example for fixed location is you ask your friend to buy a screwdriver when he happens to be in a household goods shop near his house. Keywords might be used when you don't care in which shop he buy you a screwdriver, he will be getting notifications every time when he is near a suitable shop.
 * Users should perform as little action as possible, especially ones who doing a favor. No registration, no other complications
 * This app can also be used for setting notifications for yourself, you can imagine that this app is your own reminder where your friends can add events (at least as long as you don't block them)
-* There are three main ways to show notifications which wait triggering: on the calendar, on the map and as a list, sorted by creation date
+* There are three main ways to show notifications which are waiting for triggering: on the calendar, on the map and as a list
+* Notifications are short simple text that is easy to enter and read on a smartphone
 
 **Distinctions**
 
@@ -24,12 +25,12 @@ The idea of the application is to remind your friend / wife / child or even your
 
 ### Rules of engagement: ###
 
-* The first rule of this repository is we write elegant code
-* The second rule of this repository is we DO WRITE ELEGANT CODE
-* If there is a choice between do fast or do properly, we do properly
+* The first rule of this repository is you write elegant code
+* The second rule of this repository is you DO WRITE ELEGANT CODE
+* If there is a choice between do fast or do properly, you do properly
 * Anyone can contribute or observe the project, even the universal evil is welcome
 * If someone says "stop" or goes limp, they can postpone their engagment into the project for as long as they wish
-* You can commit into the project whatever you want, however talking with the colleagues is still a good idea
-* Reading / writing *Wiki* and *Issues* page of the project would be appreciated
+* You can commit into the project whatever you want, however talking with colleagues is still a good idea
+* Reading / writing *Wiki* and *Issues* pages of the project would be highly appreciated
 * No Russain, no other languages, only English
-* If this is your first commit into the project you HAVE TO discuss it with other members
+* If this is your first commit into the project you MUST discuss it with other members
