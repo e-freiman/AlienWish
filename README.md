@@ -6,7 +6,7 @@ The goal of this project is to get / refresh Java and Android programming skills
 
 ### Idea ###
 
-The idea of the application is to remind your friend / wife / child or even yourself about something that they promised doing. Imagine, you asking your friend to bring you a book and he tells "please, remind me in the evening". It may take yeas for you to take this book. However, you could also ask your friend to install AlienWish app on his phone and start it, nothing more. On your phone you open AlienWish, create a request with text "don't forget to take a book", set 8.00 pm and send it to your friend by choosing his name in the phone's address book. In the evening your friend gets notofication about the book.
+The idea of the application is to remind your friend / wife / child or even yourself about something that they promised doing. Imagine, you asking your friend to bring you a book and he tells "please, remind me in the evening". It may take yeras for you to take this book. However, you could also ask your friend to install AlienWish app on his phone and start it, nothing more. On your phone you open AlienWish, create a request with text "don't forget to take a book", set 8.00 pm and send it to your friend by choosing his name in the phone's address book. In the evening your friend gets notofication about the book.
 
 **Key features:**
 
