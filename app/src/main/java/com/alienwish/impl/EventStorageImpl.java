@@ -13,12 +13,16 @@ import com.alienwish.EventStorage;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.Callable;
 
 import rx.Observable;
+import rx.Subscriber;
 
 /**
  * Created by Freyman on 15.12.2015.
@@ -54,6 +58,18 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    private static <T> Observable<T> makeObservable(final Callable<T> func) {
+        return Observable.create(
+                (subscriber) -> {
+                    try {
+                        subscriber.onNext(func.call());
+                    } catch(Exception ex) {
+                        subscriber.onError(ex);
+                    }
+                });
+    }
+
+
     @Override
     public void clean() {
         SQLiteDatabase db = getReadableDatabase();
@@ -88,9 +104,42 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
 
     }
 
+    private Callable<List<Event>> getCallableEvents() {
+        return () -> {
+            SQLiteDatabase db = getReadableDatabase();
+            DateFormat df = createISO8601DateFormat();
+
+            Cursor cursor = db.query(TABLE_EVENTS,
+                    new String[]{BaseColumns._ID, TABLE_EVENTS_CREATED_AT, TABLE_EVENTS_ALERT_AT, TABLE_EVENTS_TEXT},
+                    null,
+                    null,
+                    null,
+                    null,
+                    TABLE_EVENTS_ALERT_AT,
+                    null);
+
+            List<Event> events = new LinkedList<>();
+
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+                Date createdAt = df.parse(cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_CREATED_AT)));
+                Date alertAt = df.parse(cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_ALERT_AT)));
+                String text = cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_TEXT));
+
+                EventImpl event = new EventImpl(id, text, createdAt, alertAt);
+                events.add(event);
+
+                cursor.moveToNext();
+            }
+
+            return events;
+        };
+    }
+
     @Override
     public Observable<List<Event>> getEvents() {
-        return null;
+        return makeObservable(getCallableEvents());
     }
 
     @Override
