@@ -69,7 +69,6 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
                 });
     }
 
-
     @Override
     public void clean() {
         SQLiteDatabase db = getReadableDatabase();
