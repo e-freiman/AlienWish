@@ -16,4 +16,10 @@
         android:text="Retrolambda and RxAndroid test"
         android:id="@+id/rxtest_button" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Database test"
+        android:id="@+id/dbtest_button" />
+
 </LinearLayout>

@@ -11,6 +11,6 @@ import rx.Observable;
 public interface EventStorage {
     void clean();
     long addEvent(String text, Date alertAt);
-    void removeEvent(long id);
+    boolean removeEvent(long id);
     Observable<List<Event>> getEvents();
 }

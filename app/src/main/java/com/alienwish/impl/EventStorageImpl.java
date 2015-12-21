@@ -63,6 +63,7 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
                 (subscriber) -> {
                     try {
                         subscriber.onNext(func.call());
+                        subscriber.onCompleted();
                     } catch(Exception ex) {
                         subscriber.onError(ex);
                     }
@@ -99,8 +100,15 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
     }
 
     @Override
-    public void removeEvent(long id) {
+    public boolean removeEvent(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        int res = db.delete(TABLE_EVENTS, BaseColumns._ID + "=?", new String[]{Long.toString(id)});
 
+        if (id > 1) {
+            throw new IllegalStateException("More than one record with id = " + Long.toString(id) + " were deleted from " + TABLE_EVENTS);
+        }
+
+        return res == 1;
     }
 
     private Callable<List<Event>> getCallableEvents() {
