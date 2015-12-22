@@ -42,7 +42,7 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
             + BaseColumns._ID + " integer primary key autoincrement, "
             + TABLE_EVENTS_TEXT + " text not null, "
             + TABLE_EVENTS_CREATED_AT + " text not null, "
-            + TABLE_EVENTS_ALERT_AT + " text not null, "
+            + TABLE_EVENTS_ALERT_AT + " text not null"
             + ");";
 
     private static final String ISO8601_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSSZ";
@@ -113,20 +113,9 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
 
     private Callable<List<Event>> getCallableEvents() {
         return () -> {
-            SQLiteDatabase db = getReadableDatabase();
             DateFormat df = createISO8601DateFormat();
-
-            Cursor cursor = db.query(TABLE_EVENTS,
-                    new String[]{BaseColumns._ID, TABLE_EVENTS_CREATED_AT, TABLE_EVENTS_ALERT_AT, TABLE_EVENTS_TEXT},
-                    null,
-                    null,
-                    null,
-                    null,
-                    TABLE_EVENTS_ALERT_AT,
-                    null);
-
+            Cursor cursor = getCursorEvents();
             List<Event> events = new LinkedList<>();
-
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
@@ -139,14 +128,27 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
 
                 cursor.moveToNext();
             }
-
             return events;
         };
     }
 
     @Override
-    public Observable<List<Event>> getEvents() {
+    public Observable<List<Event>> getObservableEvents() {
         return makeObservable(getCallableEvents());
+    }
+
+    @Override
+    public Cursor getCursorEvents() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_EVENTS,
+                new String[]{BaseColumns._ID, TABLE_EVENTS_CREATED_AT, TABLE_EVENTS_ALERT_AT, TABLE_EVENTS_TEXT},
+                null,
+                null,
+                null,
+                null,
+                TABLE_EVENTS_ALERT_AT,
+                null);
+        return cursor;
     }
 
     @Override

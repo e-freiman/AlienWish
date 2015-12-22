@@ -1,9 +1,13 @@
-package com.alienwish;
+package com.alienwish.gui;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.alienwish.Alien;
+import com.alienwish.EventStorage;
+import com.alienwish.R;
 import com.alienwish.impl.EventStorageImpl;
 import com.jakewharton.rxbinding.view.RxView;
 
@@ -26,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Alien.init(getApplicationContext());
+
         RxView.clicks(findViewById(R.id.rxtest_button)).subscribe(notification -> {
             Observable.just("Hello, world!")
                     .map(s -> s + " -ABC")
@@ -34,13 +40,16 @@ public class MainActivity extends AppCompatActivity {
 
         RxView.clicks(findViewById(R.id.dbtest_button)).subscribe(
             notification -> {
-                EventStorage es = new EventStorageImpl(getApplicationContext());
+                EventStorage es = Alien.getInstance().getEventStorage();
+
                 es.clean();
 
                 es.addEvent("take the book", createDate(2015, 12, 22));
                 es.addEvent("read the stuff", createDate(2015, 12, 23));
                 es.addEvent("make a gun", createDate(2015, 12, 24));
                 es.addEvent("conquer the globe", createDate(2015, 12, 25));
+
+                startActivity(new Intent(getApplicationContext(), EventListActivity.class));
             }
         );
     }

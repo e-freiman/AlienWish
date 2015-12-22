@@ -1,5 +1,7 @@
 package com.alienwish;
 
+import android.database.Cursor;
+
 import java.util.Date;
 import java.util.List;
 
@@ -12,5 +14,6 @@ public interface EventStorage {
     void clean();
     long addEvent(String text, Date alertAt);
     boolean removeEvent(long id);
-    Observable<List<Event>> getEvents();
+    Observable<List<Event>> getObservableEvents();
+    Cursor getCursorEvents();
 }
