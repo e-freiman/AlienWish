@@ -22,7 +22,14 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Database test"
+        android:text="Create Test Database"
         android:id="@+id/dbtest_button" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Go To Events List"
+        android:id="@+id/goto_events_button" />
+
 
 </LinearLayout>

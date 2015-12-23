@@ -2,6 +2,7 @@ package com.alienwish;
 
 import android.database.Cursor;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -16,4 +17,5 @@ public interface EventStorage {
     boolean removeEvent(long id);
     Observable<List<Event>> getObservableEvents();
     Cursor getCursorEvents();
+    Event cursorToEvent(Cursor cursor) throws ParseException;
 }

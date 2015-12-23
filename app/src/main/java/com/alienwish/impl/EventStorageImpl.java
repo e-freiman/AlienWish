@@ -12,6 +12,7 @@ import com.alienwish.Event;
 import com.alienwish.EventStorage;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -118,18 +119,22 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
             List<Event> events = new LinkedList<>();
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
-                long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
-                Date createdAt = df.parse(cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_CREATED_AT)));
-                Date alertAt = df.parse(cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_ALERT_AT)));
-                String text = cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_TEXT));
-
-                EventImpl event = new EventImpl(id, text, createdAt, alertAt);
-                events.add(event);
-
+                events.add(cursorToEvent(cursor));
                 cursor.moveToNext();
             }
             return events;
         };
+    }
+
+    @Override
+    public Event cursorToEvent(Cursor cursor) throws ParseException {
+        DateFormat df = createISO8601DateFormat();
+        long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+        Date createdAt = df.parse(cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_CREATED_AT)));
+        Date alertAt = df.parse(cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_ALERT_AT)));
+        String text = cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_TEXT));
+        EventImpl event = new EventImpl(id, text, createdAt, alertAt);
+        return event;
     }
 
     @Override

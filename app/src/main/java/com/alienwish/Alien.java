@@ -29,11 +29,15 @@ public final class Alien {
         sInstance = new Alien(context);
     }
 
+    public static boolean isInitialized() {
+        return sInstance != null;
+    }
+
     private Alien(Context context) {
         mEventStorage = new EventStorageImpl(context);
     }
 
-    public  static Alien getInstance() {
+    public static Alien getInstance() {
         if (sInstance == null) {
             throw new IllegalStateException("Alien instance wasn't initialized");
         }
