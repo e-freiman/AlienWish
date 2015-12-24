@@ -9,6 +9,8 @@ import com.jakewharton.rxbinding.view.RxView;
 
 public class AddEventActivity extends AppCompatActivity {
 
+    private static final int DATETIME_REQUEST_CODE = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -17,5 +19,18 @@ public class AddEventActivity extends AppCompatActivity {
         RxView.clicks(findViewById(R.id.activity_add_event_add_button)).subscribe(notification -> {
             finish();
         });
+
+        RxView.clicks(findViewById(R.id.activity_add_event_date)).subscribe(notification -> {
+            startActivityForResult(new Intent(this, DatetimePickerActivity.class), DATETIME_REQUEST_CODE);
+        });
+
+        RxView.clicks(findViewById(R.id.activity_add_event_time)).subscribe(notification -> {
+            startActivityForResult(new Intent(this, DatetimePickerActivity.class), DATETIME_REQUEST_CODE);
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

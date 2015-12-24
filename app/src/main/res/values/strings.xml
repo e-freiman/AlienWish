@@ -2,4 +2,6 @@
     <string name="app_name">AlienWish</string>
     <string name="event_list_footer_add_button">Add notifier</string>
     <string name="activity_add_event_add_button">Add</string>
+    <string name="activity_datetime_picker_tab_date">Date</string>
+    <string name="activity_datetime_picker_tab_time">Time</string>
 </resources>
