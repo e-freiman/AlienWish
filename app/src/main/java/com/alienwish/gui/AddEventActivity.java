@@ -21,11 +21,11 @@ public class AddEventActivity extends AppCompatActivity {
         });
 
         RxView.clicks(findViewById(R.id.activity_add_event_date)).subscribe(notification -> {
-            startActivityForResult(new Intent(this, DatetimePickerActivity.class), DATETIME_REQUEST_CODE);
+            startActivityForResult(DatetimePickerActivity.createPickDataIntent(this), DATETIME_REQUEST_CODE);
         });
 
         RxView.clicks(findViewById(R.id.activity_add_event_time)).subscribe(notification -> {
-            startActivityForResult(new Intent(this, DatetimePickerActivity.class), DATETIME_REQUEST_CODE);
+            startActivityForResult(DatetimePickerActivity.createPickTimeIntent(this), DATETIME_REQUEST_CODE);
         });
     }
 
