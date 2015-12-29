@@ -1,36 +1,25 @@
 package com.alienwish.gui;
 
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
+import android.widget.TimePicker;
 
 import com.alienwish.R;
 import com.jakewharton.rxbinding.view.RxView;
 
-public class AddEventActivity extends AppCompatActivity {
+import java.util.Calendar;
 
-    private static final int DATETIME_REQUEST_CODE = 1;
+public class AddEventActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_event);
-
-        RxView.clicks(findViewById(R.id.activity_add_event_add_button)).subscribe(notification -> {
-            finish();
-        });
-
-        RxView.clicks(findViewById(R.id.activity_add_event_date)).subscribe(notification -> {
-            startActivityForResult(DatetimePickerActivity.createPickDataIntent(this), DATETIME_REQUEST_CODE);
-        });
-
-        RxView.clicks(findViewById(R.id.activity_add_event_time)).subscribe(notification -> {
-            startActivityForResult(DatetimePickerActivity.createPickTimeIntent(this), DATETIME_REQUEST_CODE);
-        });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
     }
 }

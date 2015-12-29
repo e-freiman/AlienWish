@@ -17,7 +17,6 @@
         </activity>
         <activity android:name=".gui.EventListActivity" />
         <activity android:name=".gui.AddEventActivity" />
-        <activity android:name=".gui.DatetimePickerActivity"></activity>
     </application>
 
 </manifest>
