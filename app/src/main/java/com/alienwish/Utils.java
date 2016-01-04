@@ -18,7 +18,7 @@ public final class Utils {
 
     public static Date createDate(int year, int month, int day) {
         Calendar cal = GregorianCalendar.getInstance();
-        cal.set(year - 1900, month, day);
+        cal.set(year, month, day);
         return new Date(cal.getTimeInMillis());
     }
 }

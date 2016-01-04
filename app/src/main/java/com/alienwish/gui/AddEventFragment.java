@@ -16,10 +16,13 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.alienwish.R;
+import com.alienwish.Alien;
 import com.jakewharton.rxbinding.view.RxView;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -52,10 +55,36 @@ public class AddEventFragment extends Fragment {
 
         RxView.clicks(view.findViewById(R.id.fragment_add_event_add_button)).subscribe(notification -> {
             if (!textEditText.getText().toString().isEmpty()) {
+
+                Date dateAlertAt = null;
+                try {
+                    dateAlertAt = mDateFormat.parse(mDateEditText.getText().toString());
+                } catch (ParseException e) {
+                    Toast.makeText(getActivity(),
+                            getResources().getText(R.string.fragment_add_event_wrong_date),
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Date timeAlertAt = null;
+                try {
+                    timeAlertAt = mTimeFormat.parse(mTimeEditText.getText().toString());
+                } catch (ParseException e) {
+                    Toast.makeText(getActivity(),
+                            getResources().getText(R.string.fragment_add_event_wrong_time),
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+
+                Date alertAt = new Date(dateAlertAt.getTime() + timeAlertAt.getTime());
+                Alien.getInstance().getEventStorage().addEvent(textEditText.getText().toString(), alertAt);
+
+                getActivity().setResult(EventListActivity.EVENT_ADDED_RESULT_CODE);
                 getActivity().finish();
             } else {
                 Toast.makeText(getActivity(),
-                        getResources().getString(R.string.fragment_add_event_empty_event),
+                        getResources().getText(R.string.fragment_add_event_empty_event),
                         Toast.LENGTH_SHORT).show();
             }
         });

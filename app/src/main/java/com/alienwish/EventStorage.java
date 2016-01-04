@@ -14,8 +14,9 @@ import rx.Observable;
 public interface EventStorage {
     void clean();
     long addEvent(String text, Date alertAt);
-    boolean removeEvent(long id);
-    Observable<List<Event>> getObservableEvents();
+    Observable<Boolean> removeEvent(long id);
+    Observable<List<Event>> getEvents();
+    Observable<Event> getEventById(long id);
     Cursor getCursorEvents();
     Event cursorToEvent(Cursor cursor) throws ParseException;
 }

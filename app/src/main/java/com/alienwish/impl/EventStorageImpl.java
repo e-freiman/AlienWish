@@ -7,6 +7,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.provider.SyncStateContract;
 
 import com.alienwish.Event;
 import com.alienwish.EventStorage;
@@ -98,21 +99,27 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
         return id;
     }
 
+    private Callable<Boolean> getCallableRemoveEvent(long id) {
+        return () -> {
+
+            SQLiteDatabase db = getReadableDatabase();
+            int res = db.delete(TABLE_EVENTS, BaseColumns._ID + "=?", new String[]{Long.toString(id)});
+
+            if (res > 1) {
+                throw new IllegalStateException("More than one record with id = " + Long.toString(id) + " were deleted from " + TABLE_EVENTS);
+            }
+
+            return res == 1;
+        };
+    }
+
     @Override
-    public boolean removeEvent(long id) {
-        SQLiteDatabase db = getReadableDatabase();
-        int res = db.delete(TABLE_EVENTS, BaseColumns._ID + "=?", new String[]{Long.toString(id)});
-
-        if (id > 1) {
-            throw new IllegalStateException("More than one record with id = " + Long.toString(id) + " were deleted from " + TABLE_EVENTS);
-        }
-
-        return res == 1;
+    public Observable<Boolean> removeEvent(long id) {
+        return makeObservable(getCallableRemoveEvent(id));
     }
 
     private Callable<List<Event>> getCallableEvents() {
         return () -> {
-            DateFormat df = createISO8601DateFormat();
             Cursor cursor = getCursorEvents();
             List<Event> events = new LinkedList<>();
             cursor.moveToFirst();
@@ -121,6 +128,28 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
                 cursor.moveToNext();
             }
             return events;
+        };
+    }
+
+    private Callable<Event> getCallableEventById(long id) {
+        return () -> {
+            SQLiteDatabase db = getReadableDatabase();
+            Cursor cursor = db.query(TABLE_EVENTS,
+                    new String[]{BaseColumns._ID, TABLE_EVENTS_CREATED_AT, TABLE_EVENTS_ALERT_AT, TABLE_EVENTS_TEXT},
+                    BaseColumns._ID + "=" + Long.toString(id),
+                    null,
+                    null,
+                    null,
+                    TABLE_EVENTS_ALERT_AT,
+                    null);
+
+            if (cursor.getCount() > 1) {
+                throw new IllegalStateException("More than one record with id = " + Long.toString(id) + " in " + TABLE_EVENTS);
+            }
+
+            cursor.moveToFirst();
+
+            return cursorToEvent(cursor);
         };
     }
 
@@ -136,7 +165,7 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
     }
 
     @Override
-    public Observable<List<Event>> getObservableEvents() {
+    public Observable<List<Event>> getEvents() {
         return makeObservable(getCallableEvents());
     }
 
@@ -152,6 +181,11 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
                 TABLE_EVENTS_ALERT_AT,
                 null);
         return cursor;
+    }
+
+    @Override
+    public Observable<Event> getEventById(long id) {
+        return makeObservable(getCallableEventById(id));
     }
 
     @Override
