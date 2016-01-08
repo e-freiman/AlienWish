@@ -1,10 +1,5 @@
 package com.alienwish;
 
-import android.database.Cursor;
-import android.provider.BaseColumns;
-
-import com.alienwish.impl.EventImpl;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -19,6 +14,18 @@ public final class Utils {
     public static Date createDate(int year, int month, int day) {
         Calendar cal = GregorianCalendar.getInstance();
         cal.set(year, month, day);
+        return new Date(cal.getTimeInMillis());
+    }
+
+    public static Date createTomorrow() {
+        Calendar cal = GregorianCalendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        return new Date(cal.getTimeInMillis());
+    }
+
+    public static Date createIn15Seconds() {
+        Calendar cal = GregorianCalendar.getInstance();
+        cal.add(Calendar.SECOND, 15);
         return new Date(cal.getTimeInMillis());
     }
 }

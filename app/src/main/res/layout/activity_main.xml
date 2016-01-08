@@ -16,20 +16,26 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Retrolambda and RxAndroid test"
-        android:id="@+id/rxtest_button" />
+        android:text="Schedule All Events"
+        android:id="@+id/activity_main_schedule_all_button" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create Test Database"
-        android:id="@+id/dbtest_button" />
+        android:text="Cancel All Events"
+        android:id="@+id/activity_main_cancel_all_button" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Sample Database"
+        android:id="@+id/activity_main_sample_db_button" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Go To Events List"
-        android:id="@+id/goto_events_button" />
+        android:id="@+id/activity_main_goto_events_button" />
 
 
 </LinearLayout>

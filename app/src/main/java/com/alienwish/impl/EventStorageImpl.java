@@ -147,8 +147,11 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
                 throw new IllegalStateException("More than one record with id = " + Long.toString(id) + " in " + TABLE_EVENTS);
             }
 
-            cursor.moveToFirst();
+            if (cursor.getCount() == 0) {
+                return null;
+            }
 
+            cursor.moveToFirst();
             return cursorToEvent(cursor);
         };
     }

@@ -4,6 +4,8 @@ package com.alienwish;
  * Created by Freyman on 22.12.2015.
  */
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 
 import com.alienwish.impl.EventStorageImpl;
@@ -21,6 +23,7 @@ public final class Alien {
 
     private static Alien sInstance;
     private EventStorage mEventStorage;
+    private Context mContext;
 
     public static void init(Context context) {
         if (sInstance != null) {
@@ -34,6 +37,7 @@ public final class Alien {
     }
 
     private Alien(Context context) {
+        mContext = context;
         mEventStorage = new EventStorageImpl(context);
     }
 
@@ -46,5 +50,48 @@ public final class Alien {
 
     public EventStorage getEventStorage() {
         return mEventStorage;
+    }
+
+    public boolean scheduleEvent(Event e) {
+
+        if (e.getAlertDate().getTime() < System.currentTimeMillis()) {
+            return false;
+        }
+
+        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setExact(
+                AlarmManager.RTC_WAKEUP,
+                e.getAlertDate().getTime(),
+                AlarmReceiver.eventToPendingIntent(mContext, e));
+
+        return true;
+    }
+
+    public void cancelEvent(Event e) {
+        PendingIntent pi = AlarmReceiver.eventToPendingIntent(mContext, e);
+        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.cancel(pi);
+    }
+
+    /**
+     * Schedule all events that are stored in the database which will happen in the future.
+     */
+    public void scheduleAllEvents() {
+        mEventStorage.getEvents().subscribe(events -> {
+            for (Event e : events) {
+                scheduleEvent(e);
+            }
+        });
+    }
+
+    /**
+     * Cancel all scheduled events that are stored in the database.
+     */
+    public void cancelAllEvents() {
+        mEventStorage.getEvents().subscribe(events -> {
+            for (Event e : events) {
+                cancelEvent(e);
+            }
+        });
     }
 }
