@@ -15,13 +15,22 @@ The idea of the application is to remind your friend / wife / child or even your
 * This app can also be used for setting notifications for yourself, you can imagine that this app is your own reminder where your friends can add events (at least as long as you don't block them)
 * There are three main ways to show notifications which are waiting for triggering: on the calendar, on the map and as a list
 * Notifications are short simple text that is easy to enter and read on a smartphone
+* An interesting user case that is not covered by others so far, is to fire notifiction when you meet somebody. However both shoud have this app istalled
 
-**Distinctions**
+
+**Distinctions from others**
 
 * This is not a *ToDo list*. ToDo list have to somehow manage tasks, like changing status to *done* and so on. We don't have this. Notification fires and this is it.
 * This is not a *Calendar*. Core functionality of calendar is to show events on a calendar. We also have events that are triggered by location and they can only be shown on a map.
+* *Google Keep* has extremely close functionality to this project. However, it doesn't work on phones that don't have *Google Services* installed. Althogh majority of Android phones has them preinstalled by a manifacurer, some of them (especially Chenese) don't. Also many manifacturers like Blackberry, Samsung (Tizen), Jolla (Jellyfish), UnubtuTouch (not sure) can run Android apps on their systems but without Google Services. It's a big marker that isn't covered by Google. In order to distanciate ourselves from *Google Keep* we are not going to use *Google Services* and our app should work on all these systems
+* The big idea behind this project is to make general open source infrastructure for sending / getting notifications. This will have three layers:
+  - The first level is the most general - text description of rules of communication between server and clients (or between clients) in order to exchange notifications. So far, it's not clear on which existing protocol it's going to be based. This will allow anybody, in any language to write a client and be integrated into our system.
+  - The second layer is Java library that implements the protocol from level one and provides functionality for getting / sending notifications. This will allow to implement client easyily on any system that can run JVM.
+  - The third layer is client for android which uses level 2 library and since it complitely open, anybody can fork it and customise for their needs
 
 *ToDo list* and *Calendar* functionalities are close to AlienWish app and in the future some incorporation is possible, as well as integration with existing *Calendar* and *ToDo lists* applications.
+
+To avoid confusions: Yes, I am going to have a server for my own money and let anybody to use it, at least while almost nowbody uses it and this is cheap.
 
 ### Rules of engagement: ###
 
