@@ -6,33 +6,44 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.alienwish.gui.AddEventFragment"
+    tools:context=".gui.EventDetailsFragment"
     android:orientation="vertical">
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/fragment_add_event_text" />
+        android:id="@+id/fragment_event_details_text" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="date"
         android:ems="10"
-        android:id="@+id/fragment_add_event_date" />
+        android:id="@+id/fragment_event_details_date" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="time"
         android:ems="10"
-        android:id="@+id/fragment_add_event_time" />
+        android:id="@+id/fragment_event_details_time" />
 
-    <Button
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/fragment_add_event_add_button"
-        android:id="@+id/fragment_add_event_add_button"
-        android:layout_gravity="center_horizontal" />
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/fragment_event_details_add_button"
+            android:id="@+id/fragment_event_details_add_button" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/fragment_event_details_cancel_button"
+            android:id="@+id/fragment_event_details_delete_button" />
+
+    </LinearLayout>
 
 </LinearLayout>

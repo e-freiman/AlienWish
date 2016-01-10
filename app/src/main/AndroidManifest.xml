@@ -15,8 +15,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".gui.EventListActivity" />
-        <activity android:name=".gui.AddEventActivity" />
+        <activity android:name=".gui.EventListFragment" />
+        <activity android:name=".gui.EventDetailsActivity" />
 
         <receiver android:name=".AlarmReceiver"/>
     </application>

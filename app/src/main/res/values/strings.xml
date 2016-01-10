@@ -1,17 +1,21 @@
 <resources>
     <string name="app_name">AlienWish</string>
     <string name="event_list_footer_add_button">Add notifier</string>
-    <string name="fragment_add_event_add_button">Add</string>
-    <string name="fragment_add_event_empty_event">You should write something in description</string>
-    <string name="fragment_add_event_wrong_date">I cannot parse date</string>
-    <string name="fragment_add_event_wrong_time">I cannot parse time</string>
+
+    <string name="fragment_event_details_add_button">Add</string>
+    <string name="fragment_event_details_save_button">Save</string>
+    <string name="fragment_event_details_cancel_button">Cancel</string>
+    <string name="fragment_event_details_delete_button">Delete</string>
+    <string name="fragment_event_details_empty_event">You should write something in description</string>
+    <string name="fragment_event_details_wrong_date">I cannot parse the date</string>
+    <string name="fragment_event_details_wrong_time">I cannot parse the time</string>
+    <string name="fragment_event_details_deleting_failed">Because of some unknown reasons deleting an event failed, try again later</string>
+    <string name="fragment_event_details_enter_date_here">Date here</string>
+    <string name="fragment_event_details_enter_time_here">Time here</string>
 
     <string name="activity_event_list_delete_pattern">Are you sure you want to delete \'%s\' notifier?</string>
     <string name="activity_event_list_delete_yes">Yes</string>
     <string name="activity_event_list_delete_cancel">Cancel</string>
 
     <string name="alarm_receiver_notification_title">Do you remember?</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
