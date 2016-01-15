@@ -15,6 +15,7 @@ import com.alienwish.EventStorage;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,37 +71,44 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
                 });
     }
 
-    @Override
-    public void clean() {
+    private void clean() {
         SQLiteDatabase db = getReadableDatabase();
         db.execSQL(DROP_TABLE_EVENTS_SCRIPT);
         onCreate(db);
     }
 
     @Override
-    public long addEvent(String text, Date alertAt) {
-        DateFormat df = createISO8601DateFormat();
-        String isoCreatedAt = df.format(new Date());
-        String isoAlertAt = df.format(alertAt);
-
-        SQLiteDatabase db = getReadableDatabase();
-
-        ContentValues newValue = new ContentValues();
-        newValue.put(TABLE_EVENTS_TEXT, text);
-        newValue.put(TABLE_EVENTS_CREATED_AT, isoCreatedAt);
-        newValue.put(TABLE_EVENTS_ALERT_AT, isoAlertAt);
-
-        long id = db.insert(TABLE_EVENTS, null, newValue);
-
-        if (id < 0) {
-            throw new SQLException("An event with text '" + text + "' wasn't added into " + TABLE_EVENTS);
-        }
-
-        return id;
+    public Observable<Event> addEvent(String text, Date alertAt) {
+        return makeObservable(addEventCallable(text, alertAt));
     }
 
-    private Callable<Boolean> getCallableRemoveEvent(long id) {
+    private  Callable<Event> addEventCallable(String text, Date alertAt) {
         return () -> {
+            DateFormat df = createISO8601DateFormat();
+            String isoCreatedAt = df.format(new Date());
+            String isoAlertAt = df.format(alertAt);
+
+            SQLiteDatabase db = getReadableDatabase();
+
+            ContentValues newValue = new ContentValues();
+            newValue.put(TABLE_EVENTS_TEXT, text);
+            newValue.put(TABLE_EVENTS_CREATED_AT, isoCreatedAt);
+            newValue.put(TABLE_EVENTS_ALERT_AT, isoAlertAt);
+
+            long id = db.insert(TABLE_EVENTS, null, newValue);
+
+            if (id < 0) {
+                throw new SQLException("An event with text '" + text + "' wasn't added into " + TABLE_EVENTS);
+            }
+
+            return getCallableEventById(id).call();
+        };
+    }
+
+    private Callable<Event> removeEventByIdCallable(long id) {
+        return () -> {
+
+            Event deletedEvent = getCallableEventById(id).call();
 
             SQLiteDatabase db = getReadableDatabase();
             int res = db.delete(TABLE_EVENTS, BaseColumns._ID + "=?", new String[]{Long.toString(id)});
@@ -109,13 +117,13 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
                 throw new IllegalStateException("More than one record with id = " + Long.toString(id) + " were deleted from " + TABLE_EVENTS);
             }
 
-            return res == 1;
+            return deletedEvent;
         };
     }
 
     @Override
-    public Observable<Boolean> removeEvent(long id) {
-        return makeObservable(getCallableRemoveEvent(id));
+    public Observable<Event> removeEventById(long id) {
+        return makeObservable(removeEventByIdCallable(id));
     }
 
     private Callable<List<Event>> getCallableEvents() {
@@ -163,6 +171,7 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
         Date createdAt = df.parse(cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_CREATED_AT)));
         Date alertAt = df.parse(cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_ALERT_AT)));
         String text = cursor.getString(cursor.getColumnIndex(TABLE_EVENTS_TEXT));
+
         EventImpl event = new EventImpl(id, text, createdAt, alertAt);
         return event;
     }

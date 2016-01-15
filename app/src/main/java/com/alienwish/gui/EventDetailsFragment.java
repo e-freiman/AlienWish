@@ -9,6 +9,7 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,8 +45,29 @@ public class EventDetailsFragment extends Fragment {
     private static final String DATE_PICKER_TAG = "datePicker";
     private static final String TIME_PICKER_TAG = "timePicker";
 
+    private static final String UTC_TIMEZONE = "UTC";
+
     private EditText mDateEditText, mTimeEditText, mDescriptionEditText;
     private DateFormat mDateFormat, mTimeFormat;
+    private Date mPickedData, mPickedTime;
+
+    private Calendar mCalendarUTC = Calendar.getInstance(TimeZone.getTimeZone(UTC_TIMEZONE));
+
+    private Date getDateOnly(Date utcDatetime) {
+        mCalendarUTC.setTime(utcDatetime);
+        mCalendarUTC.set(Calendar.HOUR_OF_DAY, 0);
+        mCalendarUTC.set(Calendar.MINUTE, 0);
+        mCalendarUTC.set(Calendar.SECOND, 0);
+        mCalendarUTC.set(Calendar.MILLISECOND, 0);
+        return new Date(mCalendarUTC.getTimeInMillis());
+    }
+
+    private Date getTimeOnly(Date utcDatetime) {
+        mCalendarUTC.setTime(utcDatetime);
+        mCalendarUTC.set(Calendar.YEAR, 1970);
+        mCalendarUTC.set(Calendar.DAY_OF_YEAR, 1);
+        return new Date(mCalendarUTC.getTimeInMillis());
+    }
 
     public static EventDetailsFragment newInstance(long eventId) {
         EventDetailsFragment f = new EventDetailsFragment();
@@ -77,27 +99,21 @@ public class EventDetailsFragment extends Fragment {
 
         eventRecord.text = mDescriptionEditText.getText().toString();
 
-        Date dateAlertAt = null;
-        try {
-            dateAlertAt = mDateFormat.parse(mDateEditText.getText().toString());
-        } catch (ParseException e) {
+        if (mPickedData == null) {
             Toast.makeText(getActivity(),
                     getResources().getText(R.string.fragment_event_details_wrong_date),
                     Toast.LENGTH_SHORT).show();
             return null;
         }
 
-        Date timeAlertAt = null;
-        try {
-            timeAlertAt = mTimeFormat.parse(mTimeEditText.getText().toString());
-        } catch (ParseException e) {
+        if (mPickedTime == null) {
             Toast.makeText(getActivity(),
                     getResources().getText(R.string.fragment_event_details_wrong_time),
                     Toast.LENGTH_SHORT).show();
             return null;
         }
 
-        eventRecord.alertAt = new Date(dateAlertAt.getTime() + timeAlertAt.getTime());
+        eventRecord.alertAt = new Date(mPickedData.getTime() + mPickedTime.getTime());
 
         return eventRecord;
     }
@@ -127,29 +143,38 @@ public class EventDetailsFragment extends Fragment {
         mDateEditText = (EditText)view.findViewById(R.id.fragment_event_details_date);
         mTimeEditText = (EditText)view.findViewById(R.id.fragment_event_details_time);
 
+
         if (getIdExtra() != EventListFragment.CREATE_NEW_EVENT_ID) {
             Alien.getInstance().getEventStorage().getEventById(getIdExtra()).subscribe(event -> {
                 mDescriptionEditText.setText(event.getText());
                 mDateEditText.setText(mDateFormat.format(event.getAlertDate()));
                 mTimeEditText.setText(mTimeFormat.format(event.getAlertDate()));
+                mPickedData = getDateOnly(event.getAlertDate());
+                mPickedTime = getTimeOnly(event.getAlertDate());
             });
         } else {
-            mDateEditText.setText(getResources().getText(R.string.fragment_event_details_enter_date_here));
-            mTimeEditText.setText(getResources().getText(R.string.fragment_event_details_enter_time_here));
+            mPickedData = null;
+            mPickedTime = null;
+            mDescriptionEditText.setHint(R.string.fragment_event_details_enter_description_here);
+            mDateEditText.setHint(R.string.fragment_event_details_enter_date_here);
+            mTimeEditText.setHint(R.string.fragment_event_details_enter_time_here);
         }
 
         Button addButton = (Button)view.findViewById(R.id.fragment_event_details_add_button);
         Button deleteButton = (Button)view.findViewById(R.id.fragment_event_details_delete_button);
 
-        final EventStorage eventStorage = Alien.getInstance().getEventStorage();
+        final Alien alien = Alien.getInstance();
+        final EventStorage eventStorage = alien.getEventStorage();
 
         if (getIdExtra() == EventListFragment.CREATE_NEW_EVENT_ID) {
             RxView.clicks(addButton).subscribe(notification -> {
                 //Add an event
                 EventRecord record = parseInput();
                 if (record != null) {
-                    eventStorage.addEvent(record.text, record.alertAt);
-                    finish(EventListFragment.EVENT_ADDED_RESULT_CODE);
+                    eventStorage.addEvent(record.text, record.alertAt).subscribe(event -> {
+                        alien.scheduleEvent(event);
+                        finish(EventListFragment.EVENT_ADDED_RESULT_CODE);
+                    });
                 }
             });
 
@@ -168,45 +193,46 @@ public class EventDetailsFragment extends Fragment {
             deleteButton.setText(getResources().getText(R.string.fragment_event_details_delete_button));
             RxView.clicks(deleteButton).subscribe(notification -> {
                 //Delete an event
-                eventStorage.getEventById(getIdExtra()).subscribe(event -> {
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setMessage(String.format(getResources().getString(R.string.activity_event_list_delete_pattern), event.getText()))
-                            .setPositiveButton(getResources().getString(R.string.activity_event_list_delete_yes), (dialog, which) -> {
-                                eventStorage.removeEvent(getIdExtra()).subscribe(result -> {
-                                    if (result) {
-                                        finish(EventListFragment.EVENT_DELETED_RESULT_CODE);
-                                    } else {
-                                        Toast.makeText(getActivity(),
-                                                getResources().getText(R.string.fragment_event_details_deleting_failed),
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            })
-                            .setNegativeButton(getResources().getString(R.string.activity_event_list_delete_cancel), (dialog, which) -> {
-                            })
-                            .show();
-                });
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage(getResources().getString(R.string.activity_event_list_delete_question))
+                        .setPositiveButton(getResources().getString(R.string.activity_event_list_delete_yes), (dialog, which) -> {
+                            eventStorage.removeEventById(getIdExtra()).subscribe(deletedEvent -> {
+                                if (deletedEvent != null) {
+                                    alien.cancelEvent(deletedEvent);
+                                    finish(EventListFragment.EVENT_DELETED_RESULT_CODE);
+                                } else {
+                                    Toast.makeText(getActivity(),
+                                            getResources().getText(R.string.fragment_event_details_deleting_failed),
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton(getResources().getString(R.string.activity_event_list_delete_cancel), (dialog, which) -> {
+                        })
+                        .show();
             });
         }
 
-        RxView.focusChanges(mDateEditText).subscribe(focus -> {
-            if (focus) {
-                DialogFragment dialogFragment = new DatePickerFragment();
-                dialogFragment.setTargetFragment(this, DATE_REQUEST_CODE);
-                dialogFragment.show(getFragmentManager(), DATE_PICKER_TAG);
-            }
+        RxView.clicks(mDateEditText).subscribe(notifier -> {
+            showDatePickerDialog();
         });
 
-        RxView.focusChanges(mTimeEditText).subscribe(focus -> {
-            if (focus) {
-                DialogFragment dialogFragment = new TimePickerFragment();
-                dialogFragment.setTargetFragment(this, TIME_REQUEST_CODE);
-                dialogFragment.show(getFragmentManager(), TIME_PICKER_TAG);
-            }
+        RxView.clicks(mTimeEditText).subscribe(notifier -> {
+            showTimePickerDialog();
         });
-
         return view;
+    }
+
+    private void showDatePickerDialog() {
+        DialogFragment dialogFragment = new DatePickerFragment();
+        dialogFragment.setTargetFragment(this, DATE_REQUEST_CODE);
+        dialogFragment.show(getFragmentManager(), DATE_PICKER_TAG);
+    }
+
+    private void showTimePickerDialog() {
+        DialogFragment dialogFragment = new TimePickerFragment();
+        dialogFragment.setTargetFragment(this, TIME_REQUEST_CODE);
+        dialogFragment.show(getFragmentManager(), TIME_PICKER_TAG);
     }
 
     @Override
@@ -217,9 +243,11 @@ public class EventDetailsFragment extends Fragment {
             switch (requestCode) {
                 case DATE_REQUEST_CODE:
                     mDateEditText.setText(mDateFormat.format(data.getLongExtra(DATE_EXTRA, 0)));
+                    mPickedData = getDateOnly(new Date(data.getLongExtra(DATE_EXTRA, 0)));
                     break;
                 case TIME_REQUEST_CODE:
                     mTimeEditText.setText(mTimeFormat.format(data.getLongExtra(TIME_EXTRA, 0)));
+                    mPickedTime = getTimeOnly(new Date(data.getLongExtra(TIME_EXTRA, 0)));
                     break;
                 default:
                     throw new IllegalStateException("Unknown request code");

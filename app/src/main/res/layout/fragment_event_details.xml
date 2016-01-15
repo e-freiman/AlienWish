@@ -19,14 +19,16 @@
         android:layout_height="wrap_content"
         android:inputType="date"
         android:ems="10"
-        android:id="@+id/fragment_event_details_date" />
+        android:id="@+id/fragment_event_details_date"
+        android:focusable="false" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="time"
         android:ems="10"
-        android:id="@+id/fragment_event_details_time" />
+        android:id="@+id/fragment_event_details_time"
+        android:focusable="false"/>
 
     <LinearLayout
         android:layout_width="match_parent"
