@@ -77,6 +77,37 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
         onCreate(db);
     }
 
+    private ContentValues parseInput(String text, Date alertAt) {
+        DateFormat df = createISO8601DateFormat();
+        String isoCreatedAt = df.format(new Date());
+        String isoAlertAt = df.format(alertAt);
+
+        ContentValues values = new ContentValues();
+        values.put(TABLE_EVENTS_TEXT, text);
+        values.put(TABLE_EVENTS_CREATED_AT, isoCreatedAt);
+        values.put(TABLE_EVENTS_ALERT_AT, isoAlertAt);
+
+        return values;
+    }
+
+    @Override
+    public Observable<Event> updateEventById(long id, String text, Date alertAt) {
+        return makeObservable(updateEventCallable(id, text, alertAt));
+    }
+
+    private Callable<Event> updateEventCallable(long id, String text, Date alertAt) {
+        return () -> {
+            SQLiteDatabase db = getReadableDatabase();
+            int res = db.update(TABLE_EVENTS, parseInput(text, alertAt), _ID + "=?", new String[]{Long.toString(id)});
+
+            if (res > 1) {
+                throw new IllegalStateException("More than one record with id = " + Long.toString(id) + " were updated in " + TABLE_EVENTS);
+            }
+
+            return getCallableEventById(id).call();
+        };
+    }
+
     @Override
     public Observable<Event> addEvent(String text, Date alertAt) {
         return makeObservable(addEventCallable(text, alertAt));
@@ -84,23 +115,10 @@ public class EventStorageImpl extends SQLiteOpenHelper implements EventStorage, 
 
     private  Callable<Event> addEventCallable(String text, Date alertAt) {
         return () -> {
-            DateFormat df = createISO8601DateFormat();
-            String isoCreatedAt = df.format(new Date());
-            String isoAlertAt = df.format(alertAt);
-
-            SQLiteDatabase db = getReadableDatabase();
-
-            ContentValues newValue = new ContentValues();
-            newValue.put(TABLE_EVENTS_TEXT, text);
-            newValue.put(TABLE_EVENTS_CREATED_AT, isoCreatedAt);
-            newValue.put(TABLE_EVENTS_ALERT_AT, isoAlertAt);
-
-            long id = db.insert(TABLE_EVENTS, null, newValue);
-
+            long id = getReadableDatabase().insert(TABLE_EVENTS, null, parseInput(text, alertAt));
             if (id < 0) {
                 throw new SQLException("An event with text '" + text + "' wasn't added into " + TABLE_EVENTS);
             }
-
             return getCallableEventById(id).call();
         };
     }

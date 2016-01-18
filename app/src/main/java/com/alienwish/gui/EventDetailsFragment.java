@@ -50,6 +50,7 @@ public class EventDetailsFragment extends Fragment {
     private EditText mDateEditText, mTimeEditText, mDescriptionEditText;
     private DateFormat mDateFormat, mTimeFormat;
     private Date mPickedData, mPickedTime;
+    private Event mEvent;
 
     private Calendar mCalendarUTC = Calendar.getInstance(TimeZone.getTimeZone(UTC_TIMEZONE));
 
@@ -146,6 +147,7 @@ public class EventDetailsFragment extends Fragment {
 
         if (getIdExtra() != EventListFragment.CREATE_NEW_EVENT_ID) {
             Alien.getInstance().getEventStorage().getEventById(getIdExtra()).subscribe(event -> {
+                mEvent = event;
                 mDescriptionEditText.setText(event.getText());
                 mDateEditText.setText(mDateFormat.format(event.getAlertDate()));
                 mTimeEditText.setText(mTimeFormat.format(event.getAlertDate()));
@@ -153,6 +155,7 @@ public class EventDetailsFragment extends Fragment {
                 mPickedTime = getTimeOnly(event.getAlertDate());
             });
         } else {
+            mEvent = null;
             mPickedData = null;
             mPickedTime = null;
             mDescriptionEditText.setHint(R.string.fragment_event_details_enter_description_here);
@@ -187,7 +190,11 @@ public class EventDetailsFragment extends Fragment {
             addButton.setText(getResources().getText(R.string.fragment_event_details_save_button));
             RxView.clicks(addButton).subscribe(notification -> {
                 //Save changes in existing event and exit
-
+                EventRecord record = parseInput();
+                eventStorage.updateEventById(mEvent.getId(), record.text, record.alertAt).subscribe(event -> {
+                    alien.scheduleEvent(event);
+                    finish(EventListFragment.EVENT_UPDATED_RESULT_CODE);
+                });
             });
 
             deleteButton.setText(getResources().getText(R.string.fragment_event_details_delete_button));

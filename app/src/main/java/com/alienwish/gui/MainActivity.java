@@ -1,16 +1,13 @@
 package com.alienwish.gui;
 
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.alienwish.Alien;
-import com.alienwish.EventStorage;
 import com.alienwish.R;
-import com.alienwish.Utils;
-import com.jakewharton.rxbinding.view.RxView;
 
 public class MainActivity extends AppCompatActivity {
+    public static final int NOTIFIER_CLICKED_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +17,5 @@ public class MainActivity extends AppCompatActivity {
         if (!Alien.isInitialized()) {
             Alien.init(getApplicationContext());
         }
-
     }
 }

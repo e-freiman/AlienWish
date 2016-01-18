@@ -13,6 +13,7 @@ import rx.Observable;
  */
 public interface EventStorage {
     Observable<Event> addEvent(String text, Date alertAt);
+    Observable<Event> updateEventById(long id, String text, Date alertAt);
     Observable<Event> removeEventById(long id);
     Observable<List<Event>> getEvents();
     Observable<Event> getEventById(long id);

@@ -7,7 +7,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.widget.Toast;
+
+import com.alienwish.gui.EventListFragment;
+import com.alienwish.gui.MainActivity;
 
 /**
  * Created by Freyman on 06.01.16.
@@ -30,11 +34,23 @@ public class AlarmReceiver  extends BroadcastReceiver {
         Alien.getInstance().getEventStorage().getEventById(id).subscribe(event -> {
             if (event != null) {
 
+                Intent i = new Intent(context, MainActivity.class);
+
+                Bundle b = new Bundle();
+                b.putLong(EventListFragment.EVENT_ID_EXTRA, event.getId());
+
+                PendingIntent pi = PendingIntent.getActivity(context,
+                        MainActivity.NOTIFIER_CLICKED_REQUEST_CODE,
+                        i,
+                        0,
+                        b);
+
                 Notification.Builder builder =
                         new Notification.Builder(context)
                                 .setSmallIcon(R.mipmap.ic_launcher)
                                 .setContentTitle(context.getResources().getString(R.string.alarm_receiver_notification_title))
-                                .setContentText(event.getText().toString());
+                                .setContentText(event.getText().toString())
+                                .setContentIntent(pi);
 
                 NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.notify((int)event.getId(), builder.build());

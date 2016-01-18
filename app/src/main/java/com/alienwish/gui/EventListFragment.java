@@ -23,11 +23,12 @@ import com.jakewharton.rxbinding.view.RxView;
 import java.text.ParseException;
 
 public class EventListFragment extends ListFragment {
+    public static final int SHOW_DETAILS_REQUEST_CODE = 2;
 
-    public static final int SHOW_DETAILS_REQUEST_CODE = 1;
     public static final int EVENT_ADDED_RESULT_CODE = 2;
     public static final int EVENT_DELETED_RESULT_CODE = 3;
     public static final int EVENT_CANCEL_RESULT_CODE = 4;
+    public static final int EVENT_UPDATED_RESULT_CODE = 5;
 
     public static final String EVENT_ID_EXTRA = "event_id";
     public static final long CREATE_NEW_EVENT_ID = -1;
@@ -139,9 +140,11 @@ public class EventListFragment extends ListFragment {
             switch (resultCode) {
                 case EVENT_ADDED_RESULT_CODE:
                 case EVENT_DELETED_RESULT_CODE:
-                case EVENT_CANCEL_RESULT_CODE:
+                case EVENT_UPDATED_RESULT_CODE:
                     updateListView();
                     updateDetailsView(0, CREATE_NEW_EVENT_ID);
+                    break;
+                case EVENT_CANCEL_RESULT_CODE:
                     break;
                 default:
             }
