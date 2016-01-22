@@ -1,9 +1,12 @@
 package com.alienwish.gui;
 
+import android.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 
 import com.alienwish.Alien;
+import com.alienwish.Event;
 import com.alienwish.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -17,5 +20,7 @@ public class MainActivity extends AppCompatActivity {
         if (!Alien.isInitialized()) {
             Alien.init(getApplicationContext());
         }
+
+        EventListFragment.show(this);
     }
 }

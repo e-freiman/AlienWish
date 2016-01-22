@@ -10,7 +10,9 @@
     tools:context=".gui.MainActivity"
     android:orientation="horizontal">
 
-    <fragment class="com.alienwish.gui.EventListFragment"
-        android:id="@+id/activity_main_event_list" android:layout_weight="1"
-        android:layout_width="0px" android:layout_height="match_parent" />
+    <FrameLayout android:id="@+id/activity_main_event_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:attr/detailsElementBackground">
+    </FrameLayout>
 </LinearLayout>

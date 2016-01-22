@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.alienwish.gui.EventDetailsFragment;
 import com.alienwish.gui.EventListFragment;
 import com.alienwish.gui.MainActivity;
 
@@ -37,7 +38,7 @@ public class AlarmReceiver  extends BroadcastReceiver {
                 Intent i = new Intent(context, MainActivity.class);
 
                 Bundle b = new Bundle();
-                b.putLong(EventListFragment.EVENT_ID_EXTRA, event.getId());
+                b.putLong(EventDetailsFragment.EVENT_ID_EXTRA, event.getId());
 
                 PendingIntent pi = PendingIntent.getActivity(context,
                         MainActivity.NOTIFIER_CLICKED_REQUEST_CODE,
