@@ -6,6 +6,7 @@ import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.os.Bundle;
@@ -37,10 +38,14 @@ public class EventListFragment extends ListFragment {
     private static final String CURRENT_ID = "current_id";
 
     private int mCurrentIndex;
-    private long mCurrentId = EventDetailsFragment.CREATE_NEW_EVENT_ID;
+    private long mCurrentId;
 
     private EventCursorAdapter mAdapter;
     private EventStorage mEventStorage;
+
+    {
+        mCurrentId = EventDetailsFragment.CREATE_NEW_EVENT_ID;
+    }
 
     private void updateListView() {
         mAdapter.changeCursor(mEventStorage.getCursorEvents());
@@ -49,6 +54,17 @@ public class EventListFragment extends ListFragment {
     public static EventListFragment newInstance() {
         EventListFragment f = new EventListFragment();
         return f;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            // Restore last state for checked position.
+            mCurrentIndex = savedInstanceState.getInt(CURRENT_INDEX, 0);
+            mCurrentId = savedInstanceState.getLong(CURRENT_ID, 0);
+        }
     }
 
     @Override
@@ -63,31 +79,21 @@ public class EventListFragment extends ListFragment {
         getListView().addFooterView(footerView);
 
         RxView.clicks(footerView.findViewById(R.id.buttonAdd)).subscribe(notification -> {
-            EventDetailsFragment.show(getActivity(), EventDetailsFragment.CREATE_NEW_EVENT_ID);
+            EventDetailsFragment.show(getActivity(), this, EventDetailsFragment.CREATE_NEW_EVENT_ID);
         });
 
-        if (savedInstanceState != null) {
-            // Restore last state for checked position.
-            mCurrentIndex = savedInstanceState.getInt(CURRENT_INDEX, 0);
-            mCurrentId = savedInstanceState.getLong(CURRENT_ID, 0);
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            EventDetailsFragment.show(getActivity(), this, mCurrentId);
         }
     }
 
     public static void show(Activity activity) {
-
-        Object someFragment = activity.getFragmentManager().findFragmentById(R.id.activity_main_event_list);
-        EventListFragment eventListFragment = null;
-        if (someFragment instanceof EventListFragment) {
-            eventListFragment = (EventListFragment) someFragment;
-        }
-
-        if (eventListFragment == null) {
-            eventListFragment = EventListFragment.newInstance();
-            FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
-            ft.replace(R.id.activity_main_event_list, eventListFragment);
-            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            ft.commit();
-        }
+        EventListFragment eventListFragment = EventListFragment.newInstance();
+        FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
+        ft.replace(R.id.activity_main_event_list, eventListFragment);
+        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        ft.addToBackStack(null);
+        ft.commit();
     }
 
     @Override
@@ -103,7 +109,11 @@ public class EventListFragment extends ListFragment {
         if (!(v.getTag() instanceof Long)) {
             throw new IllegalStateException("The item view does not have a tag");
         }
-        EventDetailsFragment.show(getActivity(), (Long) v.getTag());
+
+        mCurrentId = (Long) v.getTag();
+        mCurrentIndex = position;
+
+        EventDetailsFragment.show(getActivity(), this, mCurrentId);
     }
 
     @Override

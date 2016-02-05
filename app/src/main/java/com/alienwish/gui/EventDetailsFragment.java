@@ -61,38 +61,28 @@ public class EventDetailsFragment extends Fragment {
     private DateFormat mDateFormat, mTimeFormat;
     private Date mPickedDate, mPickedTime;
     private Event mEvent;
+    private static Bundle sPersistentState;
 
     private Calendar mCalendarUTC = Calendar.getInstance(TimeZone.getTimeZone(UTC_TIMEZONE));
 
-    public static void show(Activity activity, long id) {
+    public static void show(Activity activity, Fragment target, long id) {
+        EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
+        Bundle args = new Bundle();
+        args.putLong(EVENT_ID_EXTRA, id);
+        eventDetailsFragment.setArguments(args);
+        eventDetailsFragment.setTargetFragment(target, SHOW_DETAILS_REQUEST_CODE);
 
-        // Check to see if we have a frame in which to embed the details fragment directly in the containing UI
-        View detailsFrame = activity.findViewById(R.id.activity_main_event_details);
-        boolean dualPane = detailsFrame != null && detailsFrame.getVisibility() == View.VISIBLE;
-        int frameId = dualPane ? R.id.activity_main_event_details : R.id.activity_main_event_list;
+        FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
 
-        // Creating and showing EventDetailsFragment if necessary
-        Object someFragment = activity.getFragmentManager().findFragmentById(frameId);
-        EventDetailsFragment eventDetailsFragment = null;
-
-        if (someFragment instanceof EventDetailsFragment) {
-            eventDetailsFragment = (EventDetailsFragment) someFragment;
+        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            ft.replace(R.id.activity_main_event_details, eventDetailsFragment);
+        } else {
+            ft.replace(R.id.activity_main_event_list, eventDetailsFragment);
         }
 
-        if (eventDetailsFragment == null ||
-                eventDetailsFragment.getIdExtra() != id ||
-                eventDetailsFragment.getIdExtra() == CREATE_NEW_EVENT_ID) {
-
-            eventDetailsFragment = new EventDetailsFragment();
-            Bundle args = new Bundle();
-            args.putLong(EVENT_ID_EXTRA, id);
-            eventDetailsFragment.setArguments(args);
-
-            FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
-            ft.replace(frameId, eventDetailsFragment);
-            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            ft.commit();
-        }
+        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        ft.addToBackStack(null);
+        ft.commit();
     }
 
     private Date getDateOnly(Date utcDatetime) {
@@ -153,13 +143,10 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void finish(int resultCode) {
-        getTargetFragment().onActivityResult(getTargetRequestCode(),resultCode, null);
-
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
+        if (getTargetFragment().isVisible()) {
+            getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, null);
         } else {
-            getActivity().setResult(resultCode);
-            getActivity().finish();
+            EventListFragment.show(getActivity());
         }
     }
 
@@ -184,19 +171,19 @@ public class EventDetailsFragment extends Fragment {
             mPickedDate = null;
             mPickedTime = null;
 
-            if (savedInstanceState == null) {
+            if (sPersistentState == null) {
                 mDescriptionEditText.setHint(R.string.fragment_event_details_enter_description_here);
                 mDateEditText.setHint(R.string.fragment_event_details_enter_date_here);
                 mTimeEditText.setHint(R.string.fragment_event_details_enter_time_here);
             } else {
-                mPickedDate = longToDate(savedInstanceState.getLong(DATE_EXTRA, NULL));
-                mPickedTime = longToDate(savedInstanceState.getLong(TIME_EXTRA, NULL));
+                mPickedDate = longToDate(sPersistentState.getLong(DATE_EXTRA, NULL));
+                mPickedTime = longToDate(sPersistentState.getLong(TIME_EXTRA, NULL));
 
-                String str = savedInstanceState.getString(DESCRIPTION_TEXT_EXTRA);
+                String str = sPersistentState.getString(DESCRIPTION_TEXT_EXTRA);
 
                 mDescriptionEditText.setText(str);
-                mDateEditText.setText(savedInstanceState.getString(DATE_TEXT_EXTRA));
-                mTimeEditText.setText(savedInstanceState.getString(TIME_TEXT_EXTRA));
+                mDateEditText.setText(sPersistentState.getString(DATE_TEXT_EXTRA));
+                mTimeEditText.setText(sPersistentState.getString(TIME_TEXT_EXTRA));
             }
         } else {
             Alien.getInstance().getEventStorage().getEventById(getIdExtra()).subscribe(event -> {
@@ -314,14 +301,16 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
+
+
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString(DESCRIPTION_TEXT_EXTRA, mDescriptionEditText.getText().toString());
-        outState.putString(DATE_TEXT_EXTRA, mDateEditText.getText().toString());
-        outState.putString(TIME_TEXT_EXTRA, mDateEditText.getText().toString());
-        outState.putLong(DATE_EXTRA, dateToLong(mPickedDate));
-        outState.putLong(TIME_EXTRA, dateToLong(mPickedTime));
+    public void onConfigurationChanged(Configuration newConfig) {
+        sPersistentState = new Bundle();
+        sPersistentState.putString(DESCRIPTION_TEXT_EXTRA, mDescriptionEditText.getText().toString());
+        sPersistentState.putString(DATE_TEXT_EXTRA, mDateEditText.getText().toString());
+        sPersistentState.putString(TIME_TEXT_EXTRA, mTimeEditText.getText().toString());
+        sPersistentState.putLong(DATE_EXTRA, dateToLong(mPickedDate));
+        sPersistentState.putLong(TIME_EXTRA, dateToLong(mPickedTime));
     }
 
     @Override
