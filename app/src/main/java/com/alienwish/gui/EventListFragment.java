@@ -2,6 +2,7 @@ package com.alienwish.gui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.Context;
@@ -18,8 +19,10 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.alienwish.Alien;
+import com.alienwish.App;
 import com.alienwish.Event;
 import com.alienwish.EventStorage;
+import com.alienwish.GuiStates;
 import com.alienwish.R;
 import com.jakewharton.rxbinding.view.RxView;
 
@@ -27,44 +30,19 @@ import java.text.ParseException;
 import java.util.Objects;
 
 public class EventListFragment extends ListFragment {
+
+    private static final String TAG = EventListFragment.class.getSimpleName();
+
     public static final int EVENT_ADDED_RESULT_CODE = 2;
     public static final int EVENT_DELETED_RESULT_CODE = 3;
     public static final int EVENT_CANCEL_RESULT_CODE = 4;
     public static final int EVENT_UPDATED_RESULT_CODE = 5;
 
-
-    private static final String TAG = EventListFragment.class.getSimpleName();
-    private static final String CURRENT_INDEX = "current_index";
-    private static final String CURRENT_ID = "current_id";
-
-    private int mCurrentIndex;
-    private long mCurrentId;
-
     private EventCursorAdapter mAdapter;
     private EventStorage mEventStorage;
 
-    {
-        mCurrentId = EventDetailsFragment.CREATE_NEW_EVENT_ID;
-    }
-
     private void updateListView() {
         mAdapter.changeCursor(mEventStorage.getCursorEvents());
-    }
-
-    public static EventListFragment newInstance() {
-        EventListFragment f = new EventListFragment();
-        return f;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            // Restore last state for checked position.
-            mCurrentIndex = savedInstanceState.getInt(CURRENT_INDEX, 0);
-            mCurrentId = savedInstanceState.getLong(CURRENT_ID, 0);
-        }
     }
 
     @Override
@@ -79,28 +57,20 @@ public class EventListFragment extends ListFragment {
         getListView().addFooterView(footerView);
 
         RxView.clicks(footerView.findViewById(R.id.buttonAdd)).subscribe(notification -> {
-            EventDetailsFragment.show(getActivity(), this, EventDetailsFragment.CREATE_NEW_EVENT_ID);
+            App.getInstance().setCurrentId(App.CREATE_NEW_EVENT_ID);
+            App.getInstance().setState(GuiStates.Details);
+            EventDetailsFragment.show(getActivity(), this, true);
         });
-
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            EventDetailsFragment.show(getActivity(), this, mCurrentId);
-        }
     }
 
-    public static void show(Activity activity) {
-        EventListFragment eventListFragment = EventListFragment.newInstance();
-        FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
-        ft.replace(R.id.activity_main_event_list, eventListFragment);
-        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        ft.addToBackStack(null);
-        ft.commit();
-    }
+    public static Fragment show(Activity activity) {
+        EventListFragment eventListFragment = new EventListFragment();
+        activity.getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.activity_main_event_list, eventListFragment)
+                .commit();
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(CURRENT_INDEX, mCurrentIndex);
-        outState.putLong(CURRENT_ID, mCurrentId);
+        return eventListFragment;
     }
 
     @Override
@@ -109,11 +79,10 @@ public class EventListFragment extends ListFragment {
         if (!(v.getTag() instanceof Long)) {
             throw new IllegalStateException("The item view does not have a tag");
         }
-
-        mCurrentId = (Long) v.getTag();
-        mCurrentIndex = position;
-
-        EventDetailsFragment.show(getActivity(), this, mCurrentId);
+        App.getInstance().setCurrentId((Long) v.getTag());
+        App.getInstance().setCurrentIndex(position);
+        App.getInstance().setState(GuiStates.Details);
+        EventDetailsFragment.show(getActivity(), this, true);
     }
 
     @Override

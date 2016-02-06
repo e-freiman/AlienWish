@@ -37,14 +37,14 @@ public class AlarmReceiver  extends BroadcastReceiver {
 
                 Intent i = new Intent(context, MainActivity.class);
 
-                Bundle b = new Bundle();
-                b.putLong(EventDetailsFragment.EVENT_ID_EXTRA, event.getId());
+                App.getInstance().setState(GuiStates.Details);
+                App.getInstance().setCurrentId(event.getId());
 
                 PendingIntent pi = PendingIntent.getActivity(context,
                         MainActivity.NOTIFIER_CLICKED_REQUEST_CODE,
                         i,
                         0,
-                        b);
+                        null);
 
                 Notification.Builder builder =
                         new Notification.Builder(context)

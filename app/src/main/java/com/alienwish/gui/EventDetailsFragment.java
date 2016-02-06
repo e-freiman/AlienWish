@@ -6,11 +6,13 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +22,10 @@ import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.alienwish.App;
 import com.alienwish.Event;
 import com.alienwish.EventStorage;
+import com.alienwish.GuiStates;
 import com.alienwish.R;
 import com.alienwish.Alien;
 import com.jakewharton.rxbinding.view.RxView;
@@ -34,9 +38,6 @@ import java.util.TimeZone;
 
 public class EventDetailsFragment extends Fragment {
 
-    public static final String EVENT_ID_EXTRA = "event_id";
-    public static final long CREATE_NEW_EVENT_ID = -1;
-
     public static final int SHOW_DETAILS_REQUEST_CODE = 2;
 
     private static final int DATE_REQUEST_CODE = 1;
@@ -46,7 +47,6 @@ public class EventDetailsFragment extends Fragment {
     private static final String DESCRIPTION_TEXT_EXTRA = "description_text";
     private static final String DATE_TEXT_EXTRA = "date_text";
     private static final String TIME_TEXT_EXTRA = "time_text";
-
     private static final String DATE_EXTRA = "date";
     private static final String TIME_EXTRA = "time";
 
@@ -65,24 +65,45 @@ public class EventDetailsFragment extends Fragment {
 
     private Calendar mCalendarUTC = Calendar.getInstance(TimeZone.getTimeZone(UTC_TIMEZONE));
 
-    public static void show(Activity activity, Fragment target, long id) {
-        EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
-        Bundle args = new Bundle();
-        args.putLong(EVENT_ID_EXTRA, id);
-        eventDetailsFragment.setArguments(args);
-        eventDetailsFragment.setTargetFragment(target, SHOW_DETAILS_REQUEST_CODE);
+    public static Fragment show(Activity activity, Fragment target, boolean clearPersistentState) {
 
-        FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
-
-        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            ft.replace(R.id.activity_main_event_details, eventDetailsFragment);
-        } else {
-            ft.replace(R.id.activity_main_event_list, eventDetailsFragment);
+        if (clearPersistentState) {
+            sPersistentState = null;
         }
 
-        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        ft.addToBackStack(null);
-        ft.commit();
+        EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
+
+        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            activity.getFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.activity_main_event_list, eventDetailsFragment)
+                    .commit();
+        } else {
+            eventDetailsFragment.setTargetFragment(target, SHOW_DETAILS_REQUEST_CODE);
+            activity.getFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.activity_main_event_details, eventDetailsFragment)
+                    .commit();
+        }
+
+        return eventDetailsFragment;
+    }
+
+    public static void hide(Activity activity) {
+
+        Fragment fragment;
+        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            fragment = activity.getFragmentManager().findFragmentById(R.id.activity_main_event_list);
+        } else {
+            fragment = activity.getFragmentManager().findFragmentById(R.id.activity_main_event_details);
+        }
+
+        if (fragment != null) {
+            activity.getFragmentManager()
+                    .beginTransaction()
+                    .hide(fragment)
+                    .commit();
+        }
     }
 
     private Date getDateOnly(Date utcDatetime) {
@@ -99,15 +120,6 @@ public class EventDetailsFragment extends Fragment {
         mCalendarUTC.set(Calendar.YEAR, 1970);
         mCalendarUTC.set(Calendar.DAY_OF_YEAR, 1);
         return new Date(mCalendarUTC.getTimeInMillis());
-    }
-
-    public long getIdExtra() {
-
-        if (!getArguments().containsKey(EVENT_ID_EXTRA)) {
-            throw new IllegalStateException("Fragment doesn't have an argument");
-        }
-
-        return getArguments().getLong(EVENT_ID_EXTRA, 0);
     }
 
     private EventRecord parseInput() {
@@ -142,21 +154,33 @@ public class EventDetailsFragment extends Fragment {
         return eventRecord;
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        sPersistentState = new Bundle();
+        sPersistentState.putString(DESCRIPTION_TEXT_EXTRA, mDescriptionEditText.getText().toString());
+        sPersistentState.putString(DATE_TEXT_EXTRA, mDateEditText.getText().toString());
+        sPersistentState.putString(TIME_TEXT_EXTRA, mTimeEditText.getText().toString());
+        sPersistentState.putLong(DATE_EXTRA, dateToLong(mPickedDate));
+        sPersistentState.putLong(TIME_EXTRA, dateToLong(mPickedTime));
+    }
+
     private void finish(int resultCode) {
-        if (getTargetFragment().isVisible()) {
-            getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, null);
-        } else {
+
+        App.getInstance().setState(GuiStates.Events);
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             EventListFragment.show(getActivity());
+        } else {
+            getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, null);
+            getFragmentManager()
+                    .beginTransaction()
+                    .hide(this)
+                    .commit();
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        if (container == null) {
-            return  null;
-        }
-
         View view = inflater.inflate(R.layout.fragment_event_details, container, false);
 
         mTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
@@ -166,7 +190,7 @@ public class EventDetailsFragment extends Fragment {
         mDateEditText = (EditText)view.findViewById(R.id.fragment_event_details_date);
         mTimeEditText = (EditText)view.findViewById(R.id.fragment_event_details_time);
 
-        if (getIdExtra() == CREATE_NEW_EVENT_ID) {
+        if (App.getInstance().getCurrentId() == App.CREATE_NEW_EVENT_ID) {
             mEvent = null;
             mPickedDate = null;
             mPickedTime = null;
@@ -186,7 +210,7 @@ public class EventDetailsFragment extends Fragment {
                 mTimeEditText.setText(sPersistentState.getString(TIME_TEXT_EXTRA));
             }
         } else {
-            Alien.getInstance().getEventStorage().getEventById(getIdExtra()).subscribe(event -> {
+            Alien.getInstance().getEventStorage().getEventById(App.getInstance().getCurrentId()).subscribe(event -> {
                 mEvent = event;
                 mDescriptionEditText.setText(event.getText());
                 mDateEditText.setText(mDateFormat.format(event.getAlertDate()));
@@ -202,7 +226,7 @@ public class EventDetailsFragment extends Fragment {
         final Alien alien = Alien.getInstance();
         final EventStorage eventStorage = alien.getEventStorage();
 
-        if (getIdExtra() == CREATE_NEW_EVENT_ID) {
+        if (App.getInstance().getCurrentId() == App.CREATE_NEW_EVENT_ID) {
             RxView.clicks(addButton).subscribe(notification -> {
                 //Add an event
                 EventRecord record = parseInput();
@@ -236,7 +260,7 @@ public class EventDetailsFragment extends Fragment {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setMessage(getResources().getString(R.string.activity_event_list_delete_question))
                         .setPositiveButton(getResources().getString(R.string.activity_event_list_delete_yes), (dialog, which) -> {
-                            eventStorage.removeEventById(getIdExtra()).subscribe(deletedEvent -> {
+                            eventStorage.removeEventById(App.getInstance().getCurrentId()).subscribe(deletedEvent -> {
                                 if (deletedEvent != null) {
                                     alien.cancelEvent(deletedEvent);
                                     finish(EventListFragment.EVENT_DELETED_RESULT_CODE);
@@ -260,7 +284,14 @@ public class EventDetailsFragment extends Fragment {
         RxView.clicks(mTimeEditText).subscribe(notifier -> {
             showTimePickerDialog();
         });
+
         return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        setTargetFragment(null, -1);
     }
 
     private void showDatePickerDialog() {
@@ -299,18 +330,6 @@ public class EventDetailsFragment extends Fragment {
         } else {
             return new Date(millis);
         }
-    }
-
-
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        sPersistentState = new Bundle();
-        sPersistentState.putString(DESCRIPTION_TEXT_EXTRA, mDescriptionEditText.getText().toString());
-        sPersistentState.putString(DATE_TEXT_EXTRA, mDateEditText.getText().toString());
-        sPersistentState.putString(TIME_TEXT_EXTRA, mTimeEditText.getText().toString());
-        sPersistentState.putLong(DATE_EXTRA, dateToLong(mPickedDate));
-        sPersistentState.putLong(TIME_EXTRA, dateToLong(mPickedTime));
     }
 
     @Override
